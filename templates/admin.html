@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root { 
+            --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --text-muted: #94a3b8;
+            --primary: #3b82f6; --primary-hover: #2563eb; 
+            --success: #10b981; --success-hover: #059669;
+            --danger: #ef4444; --danger-hover: #dc2626;
+            --warning: #f59e0b; --warning-hover: #d97706;
+            --input-bg: #0f172a; --border: #334155; 
+        }
+        
+        * { box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--bg); color: var(--text); margin: 0; padding: 20px; line-height: 1.5; }
+        
+        .container { max-width: 800px; margin: 0 auto; }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 15px; margin-bottom: 25px; }
+        .header h2 { margin: 0; font-weight: 700; letter-spacing: -0.5px; }
+        .header a { color: var(--primary); text-decoration: none; font-weight: 600; transition: color 0.2s; }
+        .header a:hover { color: var(--primary-hover); }
+
+        .card { background: var(--card); padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); border: 1px solid var(--border); margin-bottom: 25px; }
+        .card h3 { margin-top: 0; margin-bottom: 15px; font-weight: 600; color: var(--text); }
+        
+        input, select { width: 100%; padding: 10px 12px; margin-bottom: 10px; background: var(--input-bg); color: var(--text); border: 1px solid var(--border); border-radius: 8px; outline: none; transition: border 0.3s; }
+        input:focus, select:focus { border-color: var(--primary); }
+        
+        button { padding: 10px 16px; cursor: pointer; border: none; border-radius: 8px; font-weight: 600; color: white; transition: all 0.2s; }
+        button:hover { transform: translateY(-1px); }
+        
+        .btn-add { background: var(--primary); width: 100%; margin-top: 5px; }
+        .btn-add:hover { background: var(--primary-hover); }
+        .btn-apply { background: var(--success); width: 100%; margin-top: 5px; }
+        .btn-apply:hover { background: var(--success-hover); }
+        .btn-danger { background: var(--danger); padding: 8px 12px; font-size: 13px; }
+        .btn-danger:hover { background: var(--danger-hover); }
+
+        .flex-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding: 12px 0; }
+        .flex-row:last-child { border-bottom: none; padding-bottom: 0; }
+        
+        .checkbox-label { display: flex; align-items: center; gap: 8px; color: var(--text-muted); font-size: 14px; margin-bottom: 10px; cursor: pointer; }
+        .checkbox-label input { width: auto; margin: 0; cursor: pointer; }
+
+        .inline-form { display: flex; gap: 10px; align-items: center; }
+        .inline-form select { margin-bottom: 0; flex: 1; }
+        .inline-form button { margin-top: 0; width: auto; }
+        
+        .chart-container { position: relative; height: 300px; width: 100%; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h2>Admin Dashboard</h2>
+        <a href="/dashboard">&larr; Back to Main Dashboard</a>
+    </div>
+
+    <div class="card">
+        <h3>Sort Files</h3>
+        <form method="GET" action="/admin" class="inline-form">
+            <select name="sort" id="sort">
+                <option value="date" {% if current_sort == 'date' %}selected{% endif %}>Date (Newest First)</option>
+                <option value="size" {% if current_sort == 'size' %}selected{% endif %}>Size (Largest First)</option>
+            </select>
+            <button type="submit" class="btn-apply">Apply Sort</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h3>Add Whitelist User</h3>
+        <form method="POST">
+            <input type="hidden" name="action" value="add_user">
+            <input name="nickname" placeholder="Nickname" required>
+            <div id="admin-fields" style="display: none;">
+                <input name="email" id="email" type="email" placeholder="Email Address">
+                <input name="password" id="password" type="password" placeholder="Initial Password">
+            </div>
+            <label class="checkbox-label">
+                <input type="checkbox" name="is_admin" id="is_admin" onchange="toggleAdminFields()"> Grant Admin Privileges
+            </label>
+            <button type="submit" class="btn-add">Add User</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h3>System Users</h3>
+        {% for u in users %}
+        <div class="flex-row">
+            <span>
+                <strong>{{ u[1] }}</strong>{% if u[2] %} <span style="color: var(--text-muted); font-size: 14px;">({{ u[2] }})</span>{% endif %}
+                {% if u[3] == 1 %}<span style="color: var(--warning); font-size: 12px; font-weight: 600; margin-left: 5px;">[ADMIN]</span>{% endif %}
+            </span>
+            <form method="POST" style="margin: 0;">
+                <input type="hidden" name="user_id" value="{{ u[0] }}">
+                <input type="hidden" name="action" value="delete_user">
+                {% if u[3] != 1 %}
+                <button type="submit" class="btn-danger" onclick="return confirm('Revoke access for {{ u[1] }}?');">Revoke Access</button>
+                {% endif %}
+            </form>
+        </div>
+        {% else %}
+        <p style="color: var(--text-muted); font-style: italic; text-align: center;">No users found.</p>
+        {% endfor %}
+    </div>
+
+    <div class="card">
+        <h3>All Server Files</h3>
+        {% for f in files %}
+        <div class="flex-row">
+            <span style="word-break: break-all; padding-right: 15px;">
+                <strong>{{ f[3] }}</strong> - <span style="color: var(--primary);">{{ (f[4]/(1024*1024))|round(2) }} MB</span> <br>
+                <span style="font-size: 13px; color: var(--text-muted);">From: <strong>{{ f[1] }}</strong> &rarr; To: <strong>{{ f[2] }}</strong></span>
+            </span>
+            <form method="POST" style="margin: 0; min-width: max-content;">
+                <input type="hidden" name="action" value="delete_file">
+                <input type="hidden" name="file_id" value="{{ f[0] }}">
+                <button type="submit" class="btn-danger">Delete File</button>
+            </form>
+        </div>
+        {% else %}
+        <p style="color: var(--text-muted); font-style: italic; text-align: center;">No files currently on the server.</p>
+        {% endfor %}
+    </div>
+
+    <div class="card">
+        <h3>Storage Usage per User</h3>
+        <div class="chart-container">
+            <canvas id="chart"></canvas>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleAdminFields() {
+        const isAdmin = document.getElementById('is_admin').checked;
+        const adminFields = document.getElementById('admin-fields');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        
+        if (isAdmin) {
+            adminFields.style.display = 'block';
+            emailInput.required = true;
+            passwordInput.required = true;
+        } else {
+            adminFields.style.display = 'none';
+            emailInput.required = false;
+            passwordInput.required = false;
+            emailInput.value = '';
+            passwordInput.value = '';
+        }
+    }
+
+    function formatBytes(bytes, decimals = 2) {
+        if (!+bytes) return '0 Bytes';
+        const k = 1024;
+        const dm = decimals < 0 ? 0 : decimals;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+    }
+
+    const storageKeys = {{ storage.keys()|list|tojson|safe if storage else '[]' }};
+    const storageValues = {{ storage.values()|list|tojson|safe if storage else '[]' }};
+    
+    if (storageKeys.length > 0) {
+        Chart.defaults.color = '#94a3b8';
+        Chart.defaults.font.family = 'Inter, sans-serif';
+
+        // Array of colors matching your dark theme palette
+        const bgPalette = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#14b8a6'];
+        const hoverPalette = ['#2563eb', '#059669', '#d97706', '#dc2626', '#7c3aed', '#0d9488'];
+
+        // Map the colors dynamically based on the number of users
+        const bgColors = storageKeys.map((_, index) => bgPalette[index % bgPalette.length]);
+        const hoverColors = storageKeys.map((_, index) => hoverPalette[index % hoverPalette.length]);
+
+        new Chart(document.getElementById('chart'), {
+            type: 'bar',
+            data: {
+                labels: storageKeys,
+                datasets: [{
+                    label: 'Storage Used',
+                    data: storageValues,
+                    backgroundColor: bgColors,
+                    hoverBackgroundColor: hoverColors,
+                    borderRadius: 4,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false 
+                    },
+                    tooltip: {
+                        backgroundColor: '#0f172a',
+                        titleColor: '#f8fafc',
+                        bodyColor: '#f8fafc',
+                        borderColor: '#334155',
+                        borderWidth: 1,
+                        padding: 10,
+                        callbacks: {
+                            label: function(context) {
+                                return ' ' + formatBytes(context.raw);
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: '#334155',
+                            drawBorder: false
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return formatBytes(value, 0);
+                            },
+                            maxTicksLimit: 6
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false,
+                            drawBorder: false
+                        }
+                    }
+                }
+            }
+        });
+    } else {
+        document.getElementById('chart').parentElement.innerHTML = '<p style="color: var(--text-muted); font-style: italic; text-align: center; margin-top: 50px;">No storage data available.</p>';
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,32 @@
+# Python cache
+__pycache__/
+*.pyc
+
+# Local/Virtual environment
+venv/
+.venv/
+env/
+instance/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local databases
+database.db
+*.db
+
+# User uploads folder
+uploads/
+
+# IDE files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# OS files
+.DS_Store
+Thumbs.db
