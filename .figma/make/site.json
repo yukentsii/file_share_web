@@ -1,0 +1,11 @@
+{
+  "title": "Transfer — Send files, simply.",
+  "description": "Effortlessly share and manage files with a sleek, minimalist interface designed for users seeking a refined, efficient file transfer experience.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

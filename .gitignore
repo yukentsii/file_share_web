@@ -1,24 +1,36 @@
-# Python cache
-__pycache__/
-*.pyc
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
 
-# Local/Virtual environment
-venv/
-.venv/
-env/
-instance/
-.pytest_cache/
-.coverage
-htmlcov/
+# Environment Variables & Secrets (NEVER COMMIT)
+.env
+.env.local
+.env.*.local
+*.env
 
-# Local databases
-database.db
+# SQLite Database & Storage (NEVER COMMIT)
 *.db
-
-# User uploads folder
+*.db-journal
+*.db-wal
+*.db-shm
+database.db
 uploads/
 
-# IDE files
+# Production Build Outputs
+dist/
+dist-server/
+build/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+*.log
+
+# Editor & OS files
 .vscode/
 .idea/
 *.suo
@@ -26,7 +38,10 @@ uploads/
 *.njsproj
 *.sln
 *.swp
-
-# OS files
 .DS_Store
 Thumbs.db
+
+# Temporary test archives
+*.tar.gz
+test_*.mjs
+test_*.js
